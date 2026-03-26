@@ -43,11 +43,11 @@ services:
       --db_maxconn=10
 
   moodle:
-    image: bitnamilegacy/moodle:latest
+    image: moodle/moodle:latest
     restart: unless-stopped
     depends_on: [db_mysql]
     ports:
-      - "8080:8080"
+      - "8080:80"
     environment:
       - MOODLE_DATABASE_TYPE=mysqli
       - MOODLE_DATABASE_HOST=db_mysql
