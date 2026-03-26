@@ -1,4 +1,3 @@
-# docker-compose.yml — VM1 & VM2 (local DB version)
 services:
   db_postgres:
     image: postgres:13
@@ -29,7 +28,8 @@ services:
   odoo:
     image: ameliasoh/is214:v1
     restart: unless-stopped
-    depends_on: [db_postgres]
+    depends_on:
+      - db_postgres
     ports:
       - "8069:8069"
     environment:
@@ -47,10 +47,11 @@ services:
       --db_password=odoo
       --db_maxconn=10
 
-moodle:
+  moodle:
     image: moodlehq/moodle-php-apache:8.1
     restart: unless-stopped
-    depends_on: [db_mysql]
+    depends_on:
+      - db_mysql
     ports:
       - "8080:80"
     environment:
@@ -65,8 +66,8 @@ moodle:
       - moodle-data-persistence:/var/moodledata
 
 volumes:
-  postgres-data: {}
-  mysql-data: {}
-  odoo-data: {}
-  moodle-data: {}
-  moodle-data-persistence: {}
+  postgres-data:
+  mysql-data:
+  odoo-data:
+  moodle-data:
+  moodle-data-persistence:
