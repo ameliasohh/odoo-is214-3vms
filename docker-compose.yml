@@ -19,11 +19,6 @@ services:
       MYSQL_PASSWORD: moodle
     volumes:
       - mysql-data:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   odoo:
     image: ameliasoh/is214:v1
@@ -55,15 +50,11 @@ services:
     ports:
       - "8080:80"
     environment:
-      - MOODLE_DB_TYPE=mysqli
-      - MOODLE_DB_HOST=db_mysql
-      - MOODLE_DB_PORT=3306
-      - MOODLE_DB_USER=moodle
-      - MOODLE_DB_PASS=moodle
-      - MOODLE_DB_NAME=moodle
-      - MOODLE_ADMIN_USER=admin
-      - MOODLE_ADMIN_PASS=Moodle@2024
-      - MOODLE_URL=http://52.184.80.14:8080
+      MOODLE_DB_HOST: db_mysql
+      MOODLE_DB_USER: moodle
+      MOODLE_DB_PASSWORD: moodle
+      MOODLE_DB_NAME: moodle
+      MOODLE_URL: http://52.184.80.14:8080
     volumes:
       - moodle-data:/var/moodledata
 
