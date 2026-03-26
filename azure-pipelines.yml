@@ -1,0 +1,26 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  DOCKERHUB_REPOSITORY: jinhongoih2024/is214
+  TAG: $(Build.BuildId)
+
+steps:
+  - script: |
+      echo "Logging in to Docker Hub"
+      echo "$(DOCKERHUB_PASSWORD)" | docker login --username "$(DOCKERHUB_USERNAME)" --password-stdin
+    displayName: Docker Hub Login
+
+  - script: |
+      docker build -t $(DOCKERHUB_REPOSITORY):$(TAG) -t $(DOCKERHUB_REPOSITORY):latest .
+    displayName: Build Image
+
+  - script: |
+      docker push $(DOCKERHUB_REPOSITORY):$(TAG)
+      docker push $(DOCKERHUB_REPOSITORY):latest
+    displayName: Push Image

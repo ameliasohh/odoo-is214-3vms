@@ -1,0 +1,53 @@
+services:
+  traefik:
+    image: traefik:v3.1
+    container_name: traefik
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro
+      - traefik-certs:/letsencrypt
+    networks:
+      - monitor
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    container_name: prometheus
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    networks:
+      - monitor
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin123}
+    volumes:
+      - grafana-data:/var/lib/grafana
+    networks:
+      - monitor
+
+volumes:
+  traefik-certs: {}
+  prometheus-data: {}
+  grafana-data: {}
+
+networks:
+  monitor:
+    driver: bridge
