@@ -25,7 +25,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-      
+
   odoo:
     image: ameliasoh/is214:v1
     restart: unless-stopped
@@ -47,26 +47,22 @@ services:
       --db_password=odoo
       --db_maxconn=10
 
-  moodle:
-    image: bitnamilegacy/moodle:latest
+moodle:
+    image: moodlehq/moodle-php-apache:8.1
     restart: unless-stopped
     depends_on: [db_mysql]
     ports:
       - "8080:80"
     environment:
-      - MOODLE_DATABASE_TYPE=mysqli
-      - MOODLE_DATABASE_HOST=db_mysql
-      - MOODLE_DATABASE_PORT_NUMBER=3306
-      - MOODLE_DATABASE_USER=moodle
-      - MOODLE_DATABASE_PASSWORD=moodle
-      - MOODLE_DATABASE_NAME=moodle
-      - MOODLE_USERNAME=admin
-      - MOODLE_PASSWORD=Moodle@2024
-      - MOODLE_EMAIL=admin@staging.local
-      - MOODLE_SITE_NAME=IS214 Staging Moodle
+      - MOODLE_DOCKER_DBTYPE=mysqli
+      - MOODLE_DOCKER_DBHOST=db_mysql
+      - MOODLE_DOCKER_DBPORT=3306
+      - MOODLE_DOCKER_DBUSER=moodle
+      - MOODLE_DOCKER_DBPASS=moodle
+      - MOODLE_DOCKER_DBNAME=moodle
     volumes:
-      - moodle-data:/bitnami/moodle
-      - moodle-data-persistence:/bitnami/moodledata
+      - moodle-data:/var/www/html
+      - moodle-data-persistence:/var/moodledata
 
 volumes:
   postgres-data: {}
