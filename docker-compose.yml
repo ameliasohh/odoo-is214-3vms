@@ -20,7 +20,12 @@ services:
       MYSQL_PASSWORD: moodle
     volumes:
       - mysql-data:/var/lib/mysql
-
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      
   odoo:
     image: ameliasoh/is214:v1
     restart: unless-stopped
@@ -43,7 +48,7 @@ services:
       --db_maxconn=10
 
   moodle:
-    image: bitnami/moodle:4.3.3
+    image: bitnamilegacy/moodle:latest
     restart: unless-stopped
     depends_on: [db_mysql]
     ports:
