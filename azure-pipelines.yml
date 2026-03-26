@@ -92,7 +92,7 @@ stages:
                 if [ -d .git ]; then
                   sudo git pull origin main
                 else
-                  sudo git clone https://github.com/jinhongoih2024/odoo-is214-3vms.git .
+                  sudo git clone https://github.com/ameliasoh/odoo-is214-3vms.git .
                 fi
                 sudo chown -R azureuser:azureuser /opt/odoo
                 mkdir -p addons filestore
@@ -130,7 +130,7 @@ stages:
                 if [ -d .git ]; then
                   sudo git pull origin main
                 else
-                  sudo git clone https://github.com/jinhongoih2024/odoo-is214-3vms.git .
+                  sudo git clone https://github.com/ameliasoh/odoo-is214-3vms.git .
                 fi
                 sudo chown -R azureuser:azureuser /opt/monitoring
                 docker-compose -f docker-compose.monitoring.yml pull
