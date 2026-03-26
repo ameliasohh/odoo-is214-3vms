@@ -22,7 +22,7 @@ services:
       - mysql-data:/var/lib/mysql
 
   odoo:
-    image: jinhongoih2024/IS214:v1
+    image: ameliasoh/is214:v1
     restart: unless-stopped
     depends_on: [db_postgres]
     ports:
