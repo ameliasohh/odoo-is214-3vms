@@ -10,7 +10,7 @@ services:
       - postgres-data:/var/lib/postgresql/data
 
   db_mysql:
-    image: mysql:8.0
+    image: mysql:5.7
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: moodle
@@ -48,7 +48,7 @@ services:
       --db_maxconn=10
 
   moodle:
-    image: ellakcy/moodle:mysql_maria
+    image: ellakcy/moodle:mysql_maria_apache
     restart: unless-stopped
     depends_on:
       - db_mysql
