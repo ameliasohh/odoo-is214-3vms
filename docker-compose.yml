@@ -43,7 +43,7 @@ services:
       --db_maxconn=10
 
   moodle:
-    image: moodle/moodle:latest
+    image: bitnami/moodle:4.3.3
     restart: unless-stopped
     depends_on: [db_mysql]
     ports:
@@ -60,8 +60,8 @@ services:
       - MOODLE_EMAIL=admin@staging.local
       - MOODLE_SITE_NAME=IS214 Staging Moodle
     volumes:
-      - moodle-data:/bitnamilegacy/moodle
-      - moodle-data-persistence:/bitnamilegacy/moodledata
+      - moodle-data:/bitnami/moodle
+      - moodle-data-persistence:/bitnami/moodledata
 
 volumes:
   postgres-data: {}
