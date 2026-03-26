@@ -1,26 +1,142 @@
 trigger:
   branches:
-    include:
-      - main
+    include: [main]
 
-pool:
-  vmImage: ubuntu-latest
+stages:
+# ─────────────────────────────────────────────
+# STAGE 1: Build & Push to Docker Hub
+# ─────────────────────────────────────────────
+- stage: DockerHub
+  displayName: 'Build & Push to Docker Hub'
+  jobs:
+  - job: Build
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - checkout: self
+    - task: Docker@2
+      displayName: 'Login to Docker Hub'
+      inputs:
+        command: login
+        containerRegistry: 'dockerhub-ameliasoh'
+    - task: Docker@2
+      displayName: 'Build & Push Odoo Image'
+      inputs:
+        command: buildAndPush
+        repository: 'ameliasoh/is214'
+        dockerfile: 'Dockerfile'
+        containerRegistry: 'dockerhub-ameliasoh'
+        tags: 'latest'
 
-variables:
-  DOCKERHUB_REPOSITORY: jinhongoih2024/is214
-  TAG: $(Build.BuildId)
+# ─────────────────────────────────────────────
+# STAGE 2: Deploy VM1
+# ─────────────────────────────────────────────
+- stage: DeployVM1
+  dependsOn: DockerHub
+  displayName: 'VM1: Deploy Odoo + Moodle'
+  jobs:
+  - deployment: staging_vm1
+    environment: 'staging'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: SSH@0
+            displayName: 'Deploy to VM1'
+            inputs:
+              sshEndpoint: 'ssh-vm1-staging'
+              runOptions: 'inline'
+              inline: |
+                set -e
+                which docker || (sudo apt update && sudo apt install -y docker.io docker-compose git)
+                sudo mkdir -p /opt/odoo
+                cd /opt/odoo
+                if [ -d .git ]; then
+                  sudo git pull origin main
+                else
+                  sudo git clone https://github.com/jinhongoih2024/odoo-is214-3vms.git .
+                fi
+                sudo chown -R azureuser:azureuser /opt/odoo
+                mkdir -p addons filestore
+                docker-compose pull
+                docker-compose down || true
+                docker-compose up -d
+                sleep 15
+                docker ps
+                curl -sf http://localhost:8069/web/health && echo "Odoo VM1 healthy" || echo "Odoo starting up"
+                curl -sf http://localhost:8080/login/index.php && echo "Moodle VM1 healthy" || echo "Moodle starting up"
 
-steps:
-  - script: |
-      echo "Logging in to Docker Hub"
-      echo "$(DOCKERHUB_PASSWORD)" | docker login --username "$(DOCKERHUB_USERNAME)" --password-stdin
-    displayName: Docker Hub Login
+# ─────────────────────────────────────────────
+# STAGE 3: Deploy VM2
+# ─────────────────────────────────────────────
+- stage: DeployVM2
+  dependsOn: DeployVM1
+  displayName: 'VM2: Deploy Odoo + Moodle'
+  jobs:
+  - deployment: staging_vm2
+    environment: 'staging'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: SSH@0
+            displayName: 'Deploy to VM2'
+            inputs:
+              sshEndpoint: 'ssh-vm2-staging'
+              runOptions: 'inline'
+              inline: |
+                set -e
+                which docker || (sudo apt update && sudo apt install -y docker.io docker-compose git)
+                sudo mkdir -p /opt/odoo
+                cd /opt/odoo
+                if [ -d .git ]; then
+                  sudo git pull origin main
+                else
+                  sudo git clone https://github.com/jinhongoih2024/odoo-is214-3vms.git .
+                fi
+                sudo chown -R azureuser:azureuser /opt/odoo
+                mkdir -p addons filestore
+                docker-compose pull
+                docker-compose down || true
+                docker-compose up -d
+                sleep 15
+                docker ps
+                curl -sf http://localhost:8069/web/health && echo "Odoo VM2 healthy" || echo "Odoo starting up"
+                curl -sf http://localhost:8080/login/index.php && echo "Moodle VM2 healthy" || echo "Moodle starting up"
 
-  - script: |
-      docker build -t $(DOCKERHUB_REPOSITORY):$(TAG) -t $(DOCKERHUB_REPOSITORY):latest .
-    displayName: Build Image
-
-  - script: |
-      docker push $(DOCKERHUB_REPOSITORY):$(TAG)
-      docker push $(DOCKERHUB_REPOSITORY):latest
-    displayName: Push Image
+# ─────────────────────────────────────────────
+# STAGE 4: Deploy VM3
+# ─────────────────────────────────────────────
+- stage: DeployVM3
+  dependsOn: DeployVM2
+  displayName: 'VM3: Deploy Traefik + Prometheus + Grafana'
+  jobs:
+  - deployment: monitoring
+    environment: 'monitoring'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: SSH@0
+            displayName: 'Deploy to VM3'
+            inputs:
+              sshEndpoint: 'ssh-vm3-monitor'
+              runOptions: 'inline'
+              inline: |
+                set -e
+                which docker || (sudo apt update && sudo apt install -y docker.io docker-compose git)
+                sudo mkdir -p /opt/monitoring
+                cd /opt/monitoring
+                if [ -d .git ]; then
+                  sudo git pull origin main
+                else
+                  sudo git clone https://github.com/jinhongoih2024/odoo-is214-3vms.git .
+                fi
+                sudo chown -R azureuser:azureuser /opt/monitoring
+                docker-compose -f docker-compose.monitoring.yml pull
+                docker-compose -f docker-compose.monitoring.yml down || true
+                docker-compose -f docker-compose.monitoring.yml up -d
+                sleep 10
+                docker ps
+                curl -sf http://localhost:9090/-/healthy && echo "Prometheus healthy" || echo "Prometheus starting"
+                curl -sf http://localhost:3000/api/health && echo "Grafana healthy" || echo "Grafana starting"

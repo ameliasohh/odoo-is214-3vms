@@ -1,19 +1,38 @@
 global:
   scrape_interval: 15s
+  evaluation_interval: 15s
 
 scrape_configs:
-  - job_name: prometheus
+  - job_name: 'odoo-vm1'
     static_configs:
-      - targets: ["prometheus:9090"]
+      - targets: ['52.184.80.14:8069']
+        labels:
+          vm: 'vm1'
+          app: 'odoo'
 
-  - job_name: traefik
-    metrics_path: /metrics
+  - job_name: 'odoo-vm2'
     static_configs:
-      - targets: ["traefik:8080"]
+      - targets: ['20.189.114.223:8069']
+        labels:
+          vm: 'vm2'
+          app: 'odoo'
 
-  - job_name: vm-node-exporter
+  - job_name: 'moodle-vm1'
     static_configs:
-      - targets:
-          - "10.0.1.4:9100"
-          - "10.0.1.5:9100"
-          - "10.0.2.4:9100"
+      - targets: ['52.184.80.14:8080']
+        labels:
+          vm: 'vm1'
+          app: 'moodle'
+
+  - job_name: 'moodle-vm2'
+    static_configs:
+      - targets: ['20.189.114.223:8080']
+        labels:
+          vm: 'vm2'
+          app: 'moodle'
+
+  - job_name: 'traefik'
+    static_configs:
+      - targets: ['localhost:8081']
+        labels:
+          app: 'traefik'
