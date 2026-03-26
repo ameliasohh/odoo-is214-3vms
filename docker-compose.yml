@@ -1,5 +1,4 @@
 # docker-compose.yml — VM1 & VM2 (local DB version)
-version: '3.8'
 services:
   db_postgres:
     image: postgres:13
