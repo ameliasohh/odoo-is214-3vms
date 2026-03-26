@@ -47,7 +47,7 @@ services:
       --db_password=odoo
       --db_maxconn=10
 
-moodle:
+  moodle:
     image: ellakcy/moodle:mysql_maria
     restart: unless-stopped
     depends_on:
