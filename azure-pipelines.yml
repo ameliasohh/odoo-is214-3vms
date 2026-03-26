@@ -74,7 +74,7 @@ stages:
   displayName: 'VM2: Deploy Odoo + Moodle'
   jobs:
   - deployment: staging_vm2
-    environment: 'staging'
+    environment: 'stagingA'
     strategy:
       runOnce:
         deploy:
